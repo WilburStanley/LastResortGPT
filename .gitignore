@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Config with personal/local settings
+config/local_settings.json
+
+# OS/editor junk
+.DS_Store
+.vscode/
+*.swp
