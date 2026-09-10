@@ -23,7 +23,7 @@ class OllamaEngine(BaseEngine):
         payload = {
             "model": self.model_name,
             "prompt": prompt,
-            "logprobs": True,
+            "logprobs": 1,
             "max_tokens": 512,
         }
         encoded_payload = json.dumps(payload).encode("utf-8")
@@ -35,8 +35,12 @@ class OllamaEngine(BaseEngine):
             method="POST",
         )
 
-        with urllib.request.urlopen(request, timeout=120) as response:
-            result = json.loads(response.read().decode("utf-8"))
+        try:
+            with urllib.request.urlopen(request, timeout=120) as response:
+                result = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as error:
+            error_body = error.read().decode("utf-8")
+            raise RuntimeError(f"Ollama returned an error: {error_body}") from error
 
         choice = result["choices"][0]
         text = choice.get("text", "")
