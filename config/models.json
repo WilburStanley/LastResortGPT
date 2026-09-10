@@ -1,0 +1,6 @@
+{
+    "gemma3:4b": {
+        "cutoff": "2024-08",
+        "engine": "ollama"
+    }
+}
