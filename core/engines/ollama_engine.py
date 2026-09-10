@@ -6,7 +6,6 @@ from core.engines.base_engine import BaseEngine
 
 OLLAMA_BASE_URL = "http://localhost:11434"
 
-
 class OllamaEngine(BaseEngine):
     def __init__(self, model_name: str):
         self.model_name = model_name

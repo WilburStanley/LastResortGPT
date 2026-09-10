@@ -28,7 +28,7 @@ def main() -> None:
 
     if not engine.is_available():
         print("Ollama is not running. Start it manually, then try again.")
-        print("Run: ollama serve")
+        print("Run: ollama serve > /dev/null 2>&1 &")
         sys.exit(1)
 
     print_banner(cutoff_date)
@@ -42,6 +42,8 @@ def main() -> None:
             break
         if not user_input.strip():
             continue
+
+        print("LastResortGPT is thinking...")
 
         result = engine.generate(user_input)
         confidence_percent = calculate_confidence(result["logprobs"])
