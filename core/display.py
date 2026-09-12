@@ -17,7 +17,7 @@ HELP_COMMANDS = [
     ("/main", "Switch to the default model"),
     ("/uncensored", "Switch to the uncensored model"),
     ("/models", "List & choose available models"),
-    ("/exit", "Quit & shut down the Ollama server"),
+    ("/exit", "Quit & shut down Ollama server"),
 ]
 
 def print_banner(cutoff_date: str, is_uncensored: bool = False) -> None:
