@@ -7,7 +7,7 @@ from core.confidence import calculate_confidence
 from core.display import print_banner, print_response, build_prompt_prefix, print_help, print_error
 from core.engines.ollama_engine import OllamaEngine
 from core.state import AppState
-from utils.colors import colorize, GREEN, VIOLET, YELLOW
+from utils.colors import colorize, GREEN, VIOLET, YELLOW, BLUE
 from utils.device import detect_device
 from utils.loading import LoadingAnimation
 from utils.process import kill_ollama_process, get_manual_kill_command
@@ -49,7 +49,7 @@ def main() -> None:
 
     if not state.engine.is_available():
         print_error("Ollama is not running. Start it manually, then try again.")
-        print(colorize("Run: ollama serve > /dev/null 2>&1 &", GREEN))
+        print(colorize("Run: ollama serve > /dev/null 2>&1 &", BLUE))
         sys.exit(1)
 
     print_current_banner(state, models_registry, device_type)

@@ -1,4 +1,4 @@
-from utils.colors import colorize, GREEN, CYAN, YELLOW, GRAY, RED
+from utils.colors import colorize, GREEN, CYAN, YELLOW, GRAY, RED, BLUE
 
 LOGO = r"""
 ██╗     ██████╗        ██████╗ ██████╗ ████████╗
@@ -16,8 +16,8 @@ HELP_COMMANDS = [
     ("/help", "Show this list of commands"),
     ("/main", "Switch to the default model"),
     ("/uncensored", "Switch to the uncensored model"),
-    ("/models", "List all available models and pick one"),
-    ("/exit", "Quit and fully shut down the Ollama server"),
+    ("/models", "List & choose available models"),
+    ("/exit", "Quit & shut down the Ollama server"),
 ]
 
 def print_banner(cutoff_date: str, is_uncensored: bool = False) -> None:
@@ -31,7 +31,7 @@ def print_banner(cutoff_date: str, is_uncensored: bool = False) -> None:
     print()
 
 def print_help() -> None:
-    print(colorize("Available commands:", CYAN))
+    print(colorize("Available commands:", BLUE))
     for command, description in HELP_COMMANDS:
         command_text = colorize(f"  {command}".ljust(16), GREEN)
         description_text = colorize(description, GRAY)
@@ -41,7 +41,7 @@ def print_help() -> None:
 def print_models_menu(models_registry: dict):
     model_names = list(models_registry.keys())
     print()
-    print(colorize("Available models:", CYAN))
+    print(colorize("Available models:", BLUE))
 
     for index, name in enumerate(model_names, start=1):
         model_info = models_registry[name]
@@ -82,8 +82,12 @@ def build_prompt_prefix(is_uncensored: bool) -> str:
     mode_name = "uncensored" if is_uncensored else "main"
     mode_color = RED if is_uncensored else GREEN
 
-    return colorize(mode_name, mode_color) + colorize("@LastResortGPT", CYAN) + colorize(":~", GRAY) + colorize("$ ", GREEN)
-
+    return (
+        colorize("LastResortGPT", YELLOW)
+        + colorize(f" ({mode_name})", mode_color)
+        + colorize(":~", GRAY)
+        + colorize("$ ", GREEN)
+    )
 
 def get_confidence_color(confidence_percent: float) -> str:
     if confidence_percent > 50:
