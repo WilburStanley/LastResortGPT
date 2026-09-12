@@ -47,10 +47,17 @@ def main() -> None:
 
         animation = LoadingAnimation()
         animation.start()
-        result = engine.generate(user_input)
+
+        try:
+            result = engine.generate(user_input)
+        except RuntimeError as error:
+            animation.stop()
+            print(colorize(f"[ ERROR: {error} ]", RED))
+            print()
+            continue
+
         animation.stop()
         confidence_percent = calculate_confidence(result["logprobs"])
-
         print_response(confidence_percent, result["text"])
 
 if __name__ == "__main__":

@@ -25,6 +25,10 @@ class LoadingAnimation:
             dot_count += 1
             time.sleep(0.4)
 
+        clear_length = len(self.message) + 10
+        sys.stdout.write("\r" + " " * clear_length + "\r")
+        sys.stdout.flush()
+
     def start(self):
         self._stop_event.clear()
         self._thread = threading.Thread(target=self._animate, daemon=True)

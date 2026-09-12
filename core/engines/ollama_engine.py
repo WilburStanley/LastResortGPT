@@ -1,11 +1,12 @@
 import json
 import urllib.request
 import urllib.error
+import socket
 
 from core.engines.base_engine import BaseEngine
 
 OLLAMA_BASE_URL = "http://localhost:11434"
-
+REQUEST_TIMEOUT_SECONDS = 180
 
 class OllamaEngine(BaseEngine):
     def __init__(self, model_name: str):
@@ -37,11 +38,15 @@ class OllamaEngine(BaseEngine):
         )
 
         try:
-            with urllib.request.urlopen(request, timeout=120) as response:
+            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
                 result = json.loads(response.read().decode("utf-8"))
+        except socket.timeout:
+            raise RuntimeError("The model took too long to respond.")
         except urllib.error.HTTPError as error:
             error_body = error.read().decode("utf-8")
-            raise RuntimeError(f"Ollama returned an error: {error_body}") from error
+            raise RuntimeError(f"Ollama returned an error: {error_body}")
+        except urllib.error.URLError as error:
+            raise RuntimeError(f"Could not reach Ollama: {error.reason}")
 
         text = result.get("response", "")
         logprobs_entries = result.get("logprobs", [])
