@@ -7,7 +7,7 @@ from core.confidence import calculate_confidence
 from core.display import print_banner, print_response, build_prompt_prefix, print_help, print_error
 from core.engines.ollama_engine import OllamaEngine
 from core.state import AppState
-from utils.colors import colorize, GREEN, VIOLET, YELLOW, BLUE
+from utils.colors import colorize, VIOLET, YELLOW, BLUE, GRAY
 from utils.device import detect_device
 from utils.loading import LoadingAnimation
 from utils.process import kill_ollama_process, get_manual_kill_command, get_manual_kill_hint
@@ -65,10 +65,15 @@ def main() -> None:
                 print("Ollama server stopped. Goodbye.")
             else:
                 print_error("Could not stop the Ollama server. It may need to be closed manually.")
-                print(f"Run this yourself: {get_manual_kill_command()}")
+                command_label = colorize("Command: ", BLUE)
+                command_value = colorize(get_manual_kill_command(), GRAY)
+                print(f"{command_label}{command_value}")
+
                 hint = get_manual_kill_hint()
                 if hint:
-                    print(f"({hint})")
+                    hint_label = colorize("Hint: ", YELLOW)
+                    hint_value = colorize(hint, GRAY)
+                    print(f"{hint_label}{hint_value}")
             break
 
         if stripped_input == "/help":
