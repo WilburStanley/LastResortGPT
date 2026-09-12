@@ -6,6 +6,7 @@ from core.engines.base_engine import BaseEngine
 
 OLLAMA_BASE_URL = "http://localhost:11434"
 
+
 class OllamaEngine(BaseEngine):
     def __init__(self, model_name: str):
         self.model_name = model_name
@@ -22,13 +23,14 @@ class OllamaEngine(BaseEngine):
         payload = {
             "model": self.model_name,
             "prompt": prompt,
-            "logprobs": 1,
-            "max_tokens": 512,
+            "stream": False,
+            "logprobs": True,
+            "top_logprobs": 1,
         }
         encoded_payload = json.dumps(payload).encode("utf-8")
 
         request = urllib.request.Request(
-            f"{OLLAMA_BASE_URL}/v1/completions",
+            f"{OLLAMA_BASE_URL}/api/generate",
             data=encoded_payload,
             headers={"Content-Type": "application/json"},
             method="POST",
@@ -41,9 +43,13 @@ class OllamaEngine(BaseEngine):
             error_body = error.read().decode("utf-8")
             raise RuntimeError(f"Ollama returned an error: {error_body}") from error
 
-        choice = result["choices"][0]
-        text = choice.get("text", "")
-        token_logprobs = choice.get("logprobs", {}).get("token_logprobs", [])
+        text = result.get("response", "")
+        logprobs_entries = result.get("logprobs", [])
+
+        token_logprobs = []
+        for entry in logprobs_entries:
+            if isinstance(entry, dict) and "logprob" in entry:
+                token_logprobs.append(entry["logprob"])
 
         return {
             "text": text.strip(),
