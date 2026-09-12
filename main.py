@@ -3,9 +3,11 @@ import os
 import sys
 
 from core.confidence import calculate_confidence
-from core.display import print_banner, print_prompt_line, print_response
+from core.display import print_banner, print_response, PROMPT_PREFIX
 from core.engines.ollama_engine import OllamaEngine
+from utils.colors import colorize, RED
 from utils.device import detect_device
+from utils.loading import LoadingAnimation
 
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
@@ -27,8 +29,8 @@ def main() -> None:
     engine = OllamaEngine(model_name=active_model)
 
     if not engine.is_available():
-        print("Ollama is not running. Start it manually, then try again.")
-        print("Run: ollama serve > /dev/null 2>&1 &")
+        print(colorize("Ollama is not running. Start it manually, then try again.", RED))
+        print(colorize("Run: ollama serve > /dev/null 2>&1 &", RED))
         sys.exit(1)
 
     print_banner(cutoff_date)
@@ -36,16 +38,17 @@ def main() -> None:
     print()
 
     while True:
-        user_input = input("commandline$ ")
+        user_input = input(PROMPT_PREFIX)
 
         if user_input.strip().lower() in ("exit", "quit"):
             break
         if not user_input.strip():
             continue
 
-        print("LastResortGPT is thinking...")
-
+        animation = LoadingAnimation()
+        animation.start()
         result = engine.generate(user_input)
+        animation.stop()
         confidence_percent = calculate_confidence(result["logprobs"])
 
         print_response(confidence_percent, result["text"])

@@ -1,5 +1,6 @@
 import os
 import platform
+from utils.colors import colorize, GREEN, RED
 
 def detect_device() -> str:
     """Returns "phone", "pc", or "unknown" based on the runtime environment."""
@@ -10,8 +11,8 @@ def detect_device() -> str:
     known_desktop_systems = {"Windows", "Darwin", "Linux"}
 
     if is_android:
-        return "phone"
+        return colorize("PHONE", GREEN)
     if system_name in known_desktop_systems:
-        return "pc"
+        return colorize("PC", GREEN)
 
-    return "unknown"
+    return colorize("UNKNOWN", RED)
