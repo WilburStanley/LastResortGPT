@@ -80,7 +80,7 @@ def print_error(message: str) -> None:
 
 def build_prompt_prefix(is_uncensored: bool) -> str:
     mode_name = "uncensored" if is_uncensored else "main"
-    mode_color = RED if is_uncensored else GREEN
+    mode_color = RED if is_uncensored else CYAN
 
     return (
         colorize("LastResortGPT", YELLOW)

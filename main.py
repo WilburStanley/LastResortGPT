@@ -10,7 +10,7 @@ from core.state import AppState
 from utils.colors import colorize, GREEN, VIOLET, YELLOW, BLUE
 from utils.device import detect_device
 from utils.loading import LoadingAnimation
-from utils.process import kill_ollama_process, get_manual_kill_command
+from utils.process import kill_ollama_process, get_manual_kill_command, get_manual_kill_hint
 
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
@@ -66,7 +66,9 @@ def main() -> None:
             else:
                 print_error("Could not stop the Ollama server. It may need to be closed manually.")
                 print(f"Run this yourself: {get_manual_kill_command()}")
-                print("(On Windows, try running your terminal as Administrator to allow this to work automatically.)")
+                hint = get_manual_kill_hint()
+                if hint:
+                    print(f"({hint})")
             break
 
         if stripped_input == "/help":
