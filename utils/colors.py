@@ -5,7 +5,8 @@ YELLOW = "\033[33m"
 GRAY = "\033[90m"
 RED = "\033[31m"
 PINK = "\033[35m"
-
+BLUE = "\033[94m"
+VIOLET = "\033[35m"
 
 def colorize(text: str, color: str) -> str:
     return f"{color}{text}{RESET}"

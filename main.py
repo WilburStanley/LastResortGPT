@@ -1,47 +1,92 @@
-import json
 import os
 import sys
 
+from config.loader import load_json
+from core.commands import switch_to_main, switch_to_uncensored, switch_via_menu
 from core.confidence import calculate_confidence
-from core.display import print_banner, print_response, PROMPT_PREFIX
+from core.display import print_banner, print_response, build_prompt_prefix, print_help, print_error
 from core.engines.ollama_engine import OllamaEngine
-from utils.colors import colorize, RED
+from core.state import AppState
+from utils.colors import colorize, GREEN, VIOLET, YELLOW
 from utils.device import detect_device
 from utils.loading import LoadingAnimation
+from utils.process import kill_ollama_process, get_manual_kill_command
 
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
 MODELS_PATH = os.path.join(CONFIG_DIR, "models.json")
 
-def load_json(path: str) -> dict:
-    with open(path, "r") as file:
-        return json.load(file)
+def print_current_banner(state: AppState, models_registry: dict, device_type: str) -> None:
+    model_info = models_registry.get(state.active_model, {})
+    cutoff_date = model_info.get("cutoff", "unknown")
+    engine_name = model_info.get("engine", "unknown")
+
+    print_banner(cutoff_date, state.is_uncensored)
+    print(f"Device: {device_type}")
+
+    agent_label = colorize("AI Agent: ", VIOLET)
+    agent_value = colorize(state.active_model, YELLOW)
+    engine_label = colorize("Engine: ", VIOLET)
+    engine_value = colorize(engine_name, YELLOW)
+    print(f"{agent_label} {agent_value}\t{engine_label} {engine_value}")
+
+    print()
+    print_help()
+
 
 def main() -> None:
     settings = load_json(SETTINGS_PATH)
     models_registry = load_json(MODELS_PATH)
 
-    active_model = settings["active_model"]
-    model_info = models_registry.get(active_model, {})
-    cutoff_date = model_info.get("cutoff", "unknown")
-
+    default_model = settings["active_model"]
     device_type = detect_device()
-    engine = OllamaEngine(model_name=active_model)
 
-    if not engine.is_available():
-        print(colorize("Ollama is not running. Start it manually, then try again.", RED))
-        print(colorize("Run: ollama serve > /dev/null 2>&1 &", RED))
+    state = AppState(
+        active_model=default_model,
+        is_uncensored=False,
+        engine=OllamaEngine(model_name=default_model),
+    )
+
+    if not state.engine.is_available():
+        print_error("Ollama is not running. Start it manually, then try again.")
+        print(colorize("Run: ollama serve > /dev/null 2>&1 &", GREEN))
         sys.exit(1)
 
-    print_banner(cutoff_date)
-    print(f"Device: {device_type}")
-    print()
+    print_current_banner(state, models_registry, device_type)
 
     while True:
-        user_input = input(PROMPT_PREFIX)
+        prompt_prefix = build_prompt_prefix(state.is_uncensored)
+        user_input = input(prompt_prefix)
+        stripped_input = user_input.strip().lower()
 
-        if user_input.strip().lower() in ("exit", "quit"):
+        if stripped_input in ("exit", "quit", "/exit"):
+            stopped_successfully = kill_ollama_process()
+            if stopped_successfully:
+                print("Ollama server stopped. Goodbye.")
+            else:
+                print_error("Could not stop the Ollama server. It may need to be closed manually.")
+                print(f"Run this yourself: {get_manual_kill_command()}")
+                print("(On Windows, try running your terminal as Administrator to allow this to work automatically.)")
             break
+
+        if stripped_input == "/help":
+            print_help()
+            continue
+
+        previous_model = state.active_model
+
+        if stripped_input == "/main":
+            state = switch_to_main(state, models_registry)
+        elif stripped_input == "/uncensored":
+            state = switch_to_uncensored(state, models_registry)
+        elif stripped_input == "/models":
+            state = switch_via_menu(state, models_registry)
+
+        if stripped_input in ("/main", "/uncensored", "/models"):
+            if state.active_model != previous_model:
+                print_current_banner(state, models_registry, device_type)
+            continue
+
         if not user_input.strip():
             continue
 
@@ -49,10 +94,10 @@ def main() -> None:
         animation.start()
 
         try:
-            result = engine.generate(user_input)
+            result = state.engine.generate(user_input)
         except RuntimeError as error:
             animation.stop()
-            print(colorize(f"[ ERROR: {error} ]", RED))
+            print_error(f"{error}")
             print()
             continue
 

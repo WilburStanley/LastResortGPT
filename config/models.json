@@ -1,6 +1,12 @@
 {
     "gemma3:4b": {
         "cutoff": "2024-08",
-        "engine": "ollama"
+        "engine": "ollama",
+        "role": "main"
+    },
+    "dolphin-mistral": {
+        "cutoff": "unknown",
+        "engine": "ollama",
+        "role": "uncensored"
     }
 }
