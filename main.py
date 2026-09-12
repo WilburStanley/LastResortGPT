@@ -11,6 +11,7 @@ from utils.colors import colorize, VIOLET, YELLOW, BLUE, GRAY
 from utils.device import detect_device
 from utils.loading import LoadingAnimation
 from utils.process import kill_ollama_process, get_manual_kill_command, get_manual_kill_hint
+from utils.validators import is_unrecognized_command, validate_prompt
 
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
@@ -33,6 +34,10 @@ def print_current_banner(state: AppState, models_registry: dict, device_type: st
     print()
     print_help()
 
+def build_engine(model_name: str, models_registry: dict) -> OllamaEngine:
+    model_info = models_registry.get(model_name, {})
+    context_window = model_info.get("context_window", 4096)
+    return OllamaEngine(model_name=model_name, context_window=context_window)
 
 def main() -> None:
     settings = load_json(SETTINGS_PATH)
@@ -44,8 +49,10 @@ def main() -> None:
     state = AppState(
         active_model=default_model,
         is_uncensored=False,
-        engine=OllamaEngine(model_name=default_model),
+        engine=build_engine(default_model, models_registry),
     )
+    
+    conversation_contexts = {}
 
     if not state.engine.is_available():
         print_error("Ollama is not running. Start it manually, then try again.")
@@ -94,14 +101,20 @@ def main() -> None:
                 print_current_banner(state, models_registry, device_type)
             continue
 
-        if not user_input.strip():
+        if is_unrecognized_command(stripped_input):
+            print_error(f"Unknown command '{stripped_input}'. Type /help to see available commands.")
+            continue
+
+        is_valid, cleaned_input = validate_prompt(user_input)
+        if not is_valid:
             continue
 
         animation = LoadingAnimation()
         animation.start()
+        existing_context = conversation_contexts.get(state.active_model)
 
         try:
-            result = state.engine.generate(user_input)
+            result = state.engine.generate(cleaned_input, context=existing_context)
         except RuntimeError as error:
             animation.stop()
             print_error(f"{error}")
@@ -109,6 +122,8 @@ def main() -> None:
             continue
 
         animation.stop()
+        conversation_contexts[state.active_model] = result["context"]
+
         confidence_percent = calculate_confidence(result["logprobs"])
         print_response(confidence_percent, result["text"])
 
