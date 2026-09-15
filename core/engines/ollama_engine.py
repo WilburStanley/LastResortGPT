@@ -7,6 +7,8 @@ from core.engines.base_engine import BaseEngine
 
 OLLAMA_BASE_URL = "http://localhost:11434"
 REQUEST_TIMEOUT_SECONDS = 180
+MAX_RESPONSE_TOKENS = 400
+KEEP_ALIVE_DURATION = "30m"
 
 class OllamaEngine(BaseEngine):
     def __init__(self, model_name: str, context_window: int = 4096):
@@ -28,8 +30,10 @@ class OllamaEngine(BaseEngine):
             "stream": False,
             "logprobs": True,
             "top_logprobs": 1,
+            "keep_alive": KEEP_ALIVE_DURATION,
             "options": {
                 "num_ctx": self.context_window,
+                "num_predict": MAX_RESPONSE_TOKENS,
             },
         }
 

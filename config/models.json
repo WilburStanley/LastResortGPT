@@ -3,12 +3,14 @@
         "cutoff": "2024-08",
         "engine": "ollama",
         "role": "main",
-        "context_window": 16384
+        "context_window_phone": 8192,
+        "context_window_pc": 131072
     },
     "dolphin-mistral": {
         "cutoff": "unknown",
         "engine": "ollama",
         "role": "uncensored",
-        "context_window": 16384
+        "context_window_phone": 8192,
+        "context_window_pc": 32768
     }
 }

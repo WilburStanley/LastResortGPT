@@ -30,13 +30,20 @@ def print_current_banner(state: AppState, models_registry: dict, device_type: st
     engine_label = colorize("Engine: ", VIOLET)
     engine_value = colorize(engine_name, YELLOW)
     print(f"{agent_label} {agent_value}\t{engine_label} {engine_value}")
+    
+    context_label = colorize("Context Window: ", VIOLET)
+    context_value = colorize(f"{state.engine.context_window:,} tokens", YELLOW)
+    print(f"{context_label}{context_value}")
 
     print()
     print_help()
 
-def build_engine(model_name: str, models_registry: dict) -> OllamaEngine:
+def build_engine(model_name: str, models_registry: dict, device_type: str) -> OllamaEngine:
     model_info = models_registry.get(model_name, {})
-    context_window = model_info.get("context_window", 4096)
+    if device_type == "phone":
+        context_window = model_info.get("context_window_phone", 4096)
+    else:
+        context_window = model_info.get("context_window_pc", 4096)
     return OllamaEngine(model_name=model_name, context_window=context_window)
 
 def main() -> None:
@@ -49,7 +56,7 @@ def main() -> None:
     state = AppState(
         active_model=default_model,
         is_uncensored=False,
-        engine=build_engine(default_model, models_registry),
+        engine=build_engine(default_model, models_registry, device_type),
     )
     
     conversation_contexts = {}
@@ -90,11 +97,11 @@ def main() -> None:
         previous_model = state.active_model
 
         if stripped_input == "/main":
-            state = switch_to_main(state, models_registry)
+            state = switch_to_main(state, models_registry, device_type, build_engine)
         elif stripped_input == "/uncensored":
-            state = switch_to_uncensored(state, models_registry)
+            state = switch_to_uncensored(state, models_registry, device_type, build_engine)
         elif stripped_input == "/models":
-            state = switch_via_menu(state, models_registry)
+            state = switch_via_menu(state, models_registry, device_type, build_engine)
 
         if stripped_input in ("/main", "/uncensored", "/models"):
             if state.active_model != previous_model:
