@@ -8,7 +8,7 @@ from core.display import print_banner, print_response, build_prompt_prefix, prin
 from core.engines.ollama_engine import OllamaEngine
 from core.state import AppState
 from utils.colors import colorize, VIOLET, YELLOW, BLUE, GRAY
-from utils.device import detect_device
+from utils.device import detect_device, get_device_display
 from utils.loading import LoadingAnimation
 from utils.process import kill_ollama_process, get_manual_kill_command, get_manual_kill_hint
 from utils.validators import is_unrecognized_command, validate_prompt
@@ -23,7 +23,7 @@ def print_current_banner(state: AppState, models_registry: dict, device_type: st
     engine_name = model_info.get("engine", "unknown")
 
     print_banner(cutoff_date, state.is_uncensored)
-    print(f"Device: {device_type}")
+    print(f"Device: {get_device_display(device_type)}")
 
     agent_label = colorize("AI Agent: ", VIOLET)
     agent_value = colorize(state.active_model, YELLOW)

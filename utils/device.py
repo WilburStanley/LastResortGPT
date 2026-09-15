@@ -16,9 +16,14 @@ def detect_device() -> str:
     known_desktop_systems = {"Windows", "Darwin", "Linux"}
 
     if is_android:
-        return colorize("PHONE", GREEN)
-
+        return "phone"
     if system_name in known_desktop_systems:
-        return colorize("PC", GREEN)
+        return "pc"
 
-    return colorize("UNKNOWN", RED)
+    return "unknown"
+
+
+def get_device_display(device_type: str) -> str:
+    if device_type == "unknown":
+        return colorize(device_type.upper(), RED)
+    return colorize(device_type.upper(), GREEN)
