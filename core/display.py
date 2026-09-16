@@ -1,4 +1,5 @@
 from utils.colors import colorize, GREEN, CYAN, YELLOW, GRAY, RED, BLUE
+from utils.markdown import render_markdown
 
 LOGO = r"""
 ██╗     ██████╗        ██████╗ ██████╗ ████████╗
@@ -100,5 +101,5 @@ def get_confidence_color(confidence_percent: float) -> str:
 def print_response(confidence_percent: float, response_text: str) -> None:
     confidence_color = get_confidence_color(confidence_percent)
     print(colorize(f"[ Confidence Level: {confidence_percent}% ]", confidence_color))
-    print(response_text)
+    print(render_markdown(response_text))
     print()
