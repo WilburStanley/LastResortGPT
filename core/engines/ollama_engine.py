@@ -8,6 +8,7 @@ from core.engines.base_engine import BaseEngine
 OLLAMA_BASE_URL = "http://localhost:11434"
 REQUEST_TIMEOUT_SECONDS = 180
 KEEP_ALIVE_DURATION = "30m"
+SYSTEM_PROMPT = "You are a direct, concise assistant. Answer plainly and directly without unnecessary preamble, commentary, or repetition. Get straight to the point."
 
 class OllamaEngine(BaseEngine):
     def __init__(self, model_name: str, context_window: int = 4096, num_predict: int = 512):
@@ -49,6 +50,7 @@ class OllamaEngine(BaseEngine):
         payload = {
             "model": self.model_name,
             "prompt": prompt,
+            "system": SYSTEM_PROMPT,
             "stream": False,
             "logprobs": True,
             "top_logprobs": 1,
