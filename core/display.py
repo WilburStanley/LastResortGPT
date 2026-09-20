@@ -18,6 +18,7 @@ HELP_COMMANDS = [
     ("/main", "Switch to the default model"),
     ("/uncensored", "Switch to the uncensored model"),
     ("/models", "List & choose available models"),
+    ("/clear", "Clear the terminal"),
     ("/exit", "Quit & shut down Ollama server"),
 ]
 
@@ -78,6 +79,15 @@ def print_models_menu(models_registry: dict):
     
 def print_error(message: str) -> None:
     print(colorize(f"[ ERROR: {message} ]", RED))
+    
+def print_time_taken(elapsed_seconds: float) -> None:
+    if elapsed_seconds < 60:
+        display_text = f"[ Time taken: {elapsed_seconds:.0f} sec ]"
+    else:
+        minutes = elapsed_seconds / 60
+        display_text = f"[ Time taken: {minutes:.1f} min ]"
+
+    print(colorize(display_text, GRAY))
 
 def build_prompt_prefix(is_uncensored: bool) -> str:
     mode_name = "uncensored" if is_uncensored else "main"

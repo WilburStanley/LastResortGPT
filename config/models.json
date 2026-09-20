@@ -1,16 +1,28 @@
 {
-    "gemma3:4b": {
-        "cutoff": "2024-08",
+    "qwen3:4b": {
+        "cutoff": "unknown",
         "engine": "ollama",
         "role": "main",
+        "device": "phone",
         "context_window_phone": 8192,
-        "context_window_pc": 131072
+        "num_predict_phone": 2048
+    },
+    "qwen3.5:4b": {
+        "cutoff": "unknown",
+        "engine": "ollama",
+        "role": "main",
+        "device": "pc",
+        "context_window_pc": 32768,
+        "num_predict_pc": 8192
     },
     "dolphin-mistral": {
         "cutoff": "unknown",
         "engine": "ollama",
         "role": "uncensored",
+        "device": "both",
         "context_window_phone": 8192,
-        "context_window_pc": 32768
+        "context_window_pc": 32768,
+        "num_predict_phone": 2048,
+        "num_predict_pc": 8192
     }
 }

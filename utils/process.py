@@ -47,3 +47,10 @@ def get_manual_kill_hint() -> str:
         return "Try running the command above directly in your terminal."
     else:
         return ""
+
+def clear_terminal() -> None:
+    system_name = platform.system()
+    if system_name == "Windows":
+        subprocess.run(["cls"], shell=True, check=False)
+    else:
+        subprocess.run(["clear"], check=False)

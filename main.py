@@ -1,16 +1,16 @@
 import os
 import sys
-
-from config.loader import load_json
+import time
+from config.loader import load_json, find_model_by_role
 from core.commands import switch_to_main, switch_to_uncensored, switch_via_menu
 from core.confidence import calculate_confidence
-from core.display import print_banner, print_response, build_prompt_prefix, print_help, print_error
+from core.display import print_banner, print_response, build_prompt_prefix, print_help, print_error, print_time_taken
 from core.engines.ollama_engine import OllamaEngine
 from core.state import AppState
 from utils.colors import colorize, VIOLET, YELLOW, BLUE, GRAY
 from utils.device import detect_device, get_device_display
 from utils.loading import LoadingAnimation
-from utils.process import kill_ollama_process, get_manual_kill_command, get_manual_kill_hint
+from utils.process import kill_ollama_process, get_manual_kill_command, get_manual_kill_hint, clear_terminal
 from utils.validators import is_unrecognized_command, validate_prompt
 
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
@@ -42,16 +42,20 @@ def build_engine(model_name: str, models_registry: dict, device_type: str) -> Ol
     model_info = models_registry.get(model_name, {})
     if device_type == "phone":
         context_window = model_info.get("context_window_phone", 4096)
+        num_predict = model_info.get("num_predict_phone", 1024)
     else:
         context_window = model_info.get("context_window_pc", 4096)
-    return OllamaEngine(model_name=model_name, context_window=context_window)
+        num_predict = model_info.get("num_predict_pc", 1024)
+    return OllamaEngine(model_name=model_name, context_window=context_window, num_predict=num_predict)
 
 def main() -> None:
-    settings = load_json(SETTINGS_PATH)
     models_registry = load_json(MODELS_PATH)
-
-    default_model = settings["active_model"]
     device_type = detect_device()
+
+    default_model = find_model_by_role(models_registry, "main", device_type)
+    if not default_model:
+        print_error("No 'main' model found for this device in models.json")
+        sys.exit(1)
 
     state = AppState(
         active_model=default_model,
@@ -80,7 +84,7 @@ def main() -> None:
             else:
                 print_error("Could not stop the Ollama server. It may need to be closed manually.")
                 command_label = colorize("Command: ", BLUE)
-                command_value = colorize(get_manual_kill_command(), GRAY)
+                command_value = colorize(get_manual_kill_command(), BLUE)
                 print(f"{command_label}{command_value}")
 
                 hint = get_manual_kill_hint()
@@ -92,6 +96,10 @@ def main() -> None:
 
         if stripped_input == "/help":
             print_help()
+            continue
+        if stripped_input == "/clear":
+            clear_terminal()
+            print_current_banner(state, models_registry, device_type)
             continue
 
         previous_model = state.active_model
@@ -118,21 +126,40 @@ def main() -> None:
 
         animation = LoadingAnimation()
         animation.start()
+
+        def handle_retry():
+            animation.notify_retry()
+
         existing_context = conversation_contexts.get(state.active_model)
 
+        start_time = time.time()
+
         try:
-            result = state.engine.generate(cleaned_input, context=existing_context)
+            result = state.engine.generate(
+                cleaned_input,
+                context=existing_context,
+                on_retry=handle_retry,
+            )
         except RuntimeError as error:
             animation.stop()
             print_error(f"{error}")
+            if "not found" in str(error).lower():
+                command_label = colorize("Command: ", BLUE)
+                command_value = colorize(f"ollama pull {state.active_model}", GRAY)
+                print(f"{command_label}{command_value}")
             print()
             continue
 
         animation.stop()
+        elapsed_seconds = time.time() - start_time
+
         conversation_contexts[state.active_model] = result["context"]
 
         confidence_percent = calculate_confidence(result["logprobs"])
         print_response(confidence_percent, result["text"])
+
+        if elapsed_seconds > 30:
+            print_time_taken(elapsed_seconds)
 
 if __name__ == "__main__":
     main()
