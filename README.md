@@ -246,6 +246,10 @@ Every model's behavior is defined in `config/models.json`. No code changes neede
 
 To add a new model, run `ollama pull <model-name>`, then add a matching entry here. To change which model is your default, edit the `role` and `device` fields. The app reads this config fresh every time it starts.
 
+Display on Uncensored mode
+
+![Uncensored screenshot](./docs/uncensored-screenshot.png)
+
 Display on Android via Termux
 
 ![Android screenshot](./docs/android-screenshot.jpg)
