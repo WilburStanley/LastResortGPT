@@ -1,22 +1,22 @@
 {
-    "qwen3:4b": {
-        "cutoff": "unknown",
-        "engine": "ollama",
-        "role": "main",
-        "device": "phone",
-        "context_window_phone": 8192,
-        "num_predict_phone": 2048
-    },
     "qwen3.5:4b": {
-        "cutoff": "unknown",
+        "cutoff": "Unknown - Model Age: 2026 (exact month unconfirmed)",
         "engine": "ollama",
         "role": "main",
         "device": "pc",
         "context_window_pc": 32768,
         "num_predict_pc": 8192
     },
+    "phi4-mini": {
+        "cutoff": "June 2024",
+        "engine": "ollama",
+        "role": "main",
+        "device": "phone",
+        "context_window_phone": 8192,
+        "num_predict_phone": 2048
+    },
     "dolphin-mistral": {
-        "cutoff": "unknown",
+        "cutoff": "Unknown - Model Age: 2024 (based on Mistral 7B v0.2)",
         "engine": "ollama",
         "role": "uncensored",
         "device": "both",
