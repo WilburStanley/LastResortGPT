@@ -1,5 +1,7 @@
 # LastResortGPT
 
+![Main screenshot](./docs/main-screenshot-pc.png)
+
 A fully offline personal AI assistant, built for the moments when you have no internet and no other AI access at all: a genuine last resort, not a daily driver. Runs entirely on your own device (phone via Termux, or PC) using a local model through Ollama, with no cloud API, no account, and no internet dependency once set up.
 
 It also works on Android via Termux, in addition to Windows, macOS, and Linux.
